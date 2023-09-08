@@ -101,7 +101,7 @@ if /I "%1" EQU "--clean-while-building" (
   echo Unrecognized argument '%1'
   goto print_help
 )
-
+goto startParamLoop
 :doneParams
 
 rem For build purposes, we need to make sure we have all the SourceLink information
