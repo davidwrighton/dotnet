@@ -147,7 +147,7 @@ rem        exit /b 1
 rem      fi
     )
 
-    # We need to add "fake" .git/ files when not building from a git repository
+    rem We need to add "fake" .git/ files when not building from a git repository
     md !GIT_DIR!
     echo '[remote "origin"]' > "!GIT_DIR!/config"
     echo url=""$sourceRepository"" >> "!GIT_DIR!/config"
@@ -163,11 +163,16 @@ if "!CUSTOM_PACKAGES_DIR!" NEQ "" ] (
   fi
 )
 
+set BUILD_LOCAL_SDK=
+if EXIST "!SCRIPT_ROOT!artifacts\toolset\sdk.txt" (
+  set /p BUILD_LOCAL_SDK=<!SCRIPT_ROOT!artifacts\toolset\sdk.txt
+)
+
 if exist "!packagesArchiveDir!archiveArtifacts.txt" (
   set ARCHIVE_ERROR=0
-  if NOT EXIST "!SCRIPT_ROOT!/.dotnet"  (
+  if NOT EXIST "!BUILD_LOCAL_SDK!"  (
     if "!CUSTOM_SDK_DIR!" EQU "" (
-      echo "ERROR: SDK not found at '!SCRIPT_ROOT!\.dotnet'. Either run prep.cmd to acquire one or specify one via the --with-sdk parameter."
+      echo "ERROR: SDK not found at '!BUILD_LOCAL_SDK|'. Either run prep.cmd to acquire one or specify one via the --with-sdk parameter."
       set ARCHIVE_ERROR=1
     )
   )
@@ -198,7 +203,15 @@ if EXIST "!CUSTOM_SDK_DIR!" (
 ) else (
   FOR /F %%a IN ('powershell -c "type !SCRIPT_ROOT!\global.json | Select-String ""`\""dotnet`\"" *: *`\""(.*)`\"""" | ForEach-Object -MemberName Matches | ForEach-Object { $_.Groups.Groups[1].Value } "') DO (
     set SDK_VERSION=%%a
-    set CLI_ROOT=!SCRIPT_ROOT!.dotnet
+    set CLI_ROOT=!BUILD_LOCAL_SDK!
+  )
+  set VALID_SDK_VERSION_FOUND=
+  FOR /F %%a IN ('"!CLI_ROOT!\dotnet" --list-sdks ^| findstr !SDK_VERSION!') DO (
+    set VALID_SDK_VERSION_FOUND=1
+  )
+  if "!VALID_SDK_VERSION_FOUND!" NEQ "1" (
+    echo ERROR sdk located at !CLI_ROOT! does not include SDK_VERSION !SDK_VERSION!
+    exit /b 1
   )
 )
 
@@ -237,9 +250,9 @@ if not exist "!packageVersionsPath!" (
 FOR /F %%a IN ('powershell -c "type !packageVersionsPath! | Select-String 'MicrosoftDotNetArcadeSdkVersion>(.*)</MicrosoftDotNetArcadeSdkVersion' | ForEach-Object -MemberName Matches | ForEach-Object { $_.Groups.Groups[1].Value }"') DO (
   set ARCADE_BOOTSTRAP_VERSION=%%a
 
-  # Ensure that by default, the bootstrap version of the Arcade SDK is used. Source-build infra
-  # projects use bootstrap Arcade SDK, and would fail to find it in the build. The repo
-  # projects overwrite this so that they use the source-built Arcade SDK instad.
+  rem Ensure that by default, the bootstrap version of the Arcade SDK is used. Source-build infra
+  rem projects use bootstrap Arcade SDK, and would fail to find it in the build. The repo
+  rem projects overwrite this so that they use the source-built Arcade SDK instad.
   set SOURCE_BUILT_SDK_ID_ARCADE=Microsoft.DotNet.Arcade.Sdk
   set SOURCE_BUILT_SDK_VERSION_ARCADE=!ARCADE_BOOTSTRAP_VERSION!
   set SOURCE_BUILT_SDK_DIR_ARCADE=!packagesRestoredDir!\ArcadeBootstrapPackage\microsoft.dotnet.arcade.sdk\!ARCADE_BOOTSTRAP_VERSION!
@@ -249,7 +262,7 @@ FOR /F %%a IN ('powershell -c "type !packageVersionsPath! | Select-String 'Micro
   set SOURCE_LINK_BOOTSTRAP_VERSION=%%a
 )
 
-echo "Found bootstrap SDK $SDK_VERSION, bootstrap Arcade $ARCADE_BOOTSTRAP_VERSION, bootstrap SourceLink $SOURCE_LINK_BOOTSTRAP_VERSION"
+echo Found bootstrap SDK !SDK_VERSION!, bootstrap Arcade !ARCADE_BOOTSTRAP_VERSION!, bootstrap SourceLink !SOURCE_LINK_BOOTSTRAP_VERSION!
 
 set DOTNET_CLI_TELEMETRY_OPTOUT=1
 set NUGET_PACKAGES=!packagesRestoredDir!\

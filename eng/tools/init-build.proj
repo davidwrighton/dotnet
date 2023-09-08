@@ -41,7 +41,10 @@
           Outputs="$(CompletedSemaphorePath)UnpackTarballs.complete" >
 
     <MakeDir Directories="$(PrebuiltSourceBuiltPackagesPath)" Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''" />
-    <Exec Command="tar -xzf $(ExternalTarballsDir)$(SourceBuiltArtifactsTarballName).*.tar.gz"
+    <ItemGroup>
+      <SourceBuiltArtifactsTarballNames Include="$(ExternalTarballsDir)$(SourceBuiltArtifactsTarballName).*.tar.gz" />
+    </ItemGroup>
+    <Exec Command="tar -xzf %(SourceBuiltArtifactsTarballNames.Identity)"
           WorkingDirectory="$(PrebuiltSourceBuiltPackagesPath)"
           Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''" />
 
@@ -119,7 +122,7 @@
 
     <!-- TODO: When unpacking using ZipFileExtractToDirectory, this executable file has the wrong
          permissions.  See https://github.com/dotnet/source-build/issues/2259 -->
-    <Exec Command="chmod 755 git-clone-to-dir.sh"
+    <Exec Condition="'$(OS)' != 'Windows_NT'" Command="chmod 755 git-clone-to-dir.sh"
       WorkingDirectory="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)/tools/SourceBuild/" />
 
     <ReplaceTextInFile InputFile="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)/tools/SourceBuild/SourceBuildArcadeTools.targets"
