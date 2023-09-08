@@ -5,10 +5,10 @@ goto after_help
 :print_help
 
 echo Usage: %0 [options]
-echo
+echo:
 echo   Prepares the environment to be built by downloading Private.SourceBuilt.Artifacts.*.tar.gz and
 echo   installing the version of dotnet referenced in global.json
-echo
+echo:
 echo Options:
 echo   --no-artifacts              Exclude the download of the previously source-built artifacts archive
 echo   --no-bootstrap              Don't replace portable packages in the download source-built artifacts
@@ -47,10 +47,17 @@ if /I "%1" EQU "--no-artifacts" (
 ) else if /I "%1" EQU "--runtime-source-feed-key" (
   set runtime_source_feed_key=%2
   shift
+) else if /I "%1" EQU "--help" (
+  goto print_help
+) else if /I "%1" EQU "-?" (
+  goto print_help
+) else if /I "%1" EQU "-h" (
+  goto print_help
 ) else (
   echo Unrecognized argument '%1'
   goto print_help
 )
+shift
 goto startParamLoop
 :doneParams
 
@@ -179,5 +186,5 @@ if "!archiveUrl!" EQU "" (
   curl --retry 5 -O !archiveUrl!
   popd
 )
-noteprem End function
+rem End function
 goto :EOF

@@ -4,8 +4,8 @@ setlocal enableextensions enabledelayedexpansion
 goto after_help
 :print_help
 
-echo Usage: $0 [options]
-echo
+echo Usage: %0 [options]
+echo:
 echo Options:
 echo   --clean-while-building       Cleans each repo after building (reduces disk space usage)
 echo   --online                     Build using online sources
@@ -17,7 +17,7 @@ echo   --release-manifest <FILE>    A JSON file, an alternative source of Source
 echo   --use-mono-runtime           Output uses the mono runtime
 echo   --with-packages <DIR>        Use the specified directory of previously-built packages
 echo   --with-sdk <DIR>             Use the SDK in the specified directory for bootstrapping
-echo
+echo:
 echo Use -- to send the remaining arguments to MSBuild
 
 exit /b 0
@@ -101,6 +101,7 @@ if /I "%1" EQU "--clean-while-building" (
   echo Unrecognized argument '%1'
   goto print_help
 )
+shift
 goto startParamLoop
 :doneParams
 
