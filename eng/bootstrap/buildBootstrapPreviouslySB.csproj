@@ -23,6 +23,7 @@
     <LinuxRid Include="linux-musl-x64" />
     <LinuxRid Include="linux-arm64" />
     <LinuxRid Include="linux-musl-arm64" />
+    <LinuxRid Condition="'$(OS)' == 'Windows_NT'" Include="win-x64" />
   </ItemGroup>
 
   <!-- These packages will be replaced with ms-built packages downloaded from official package feeds-->
@@ -45,6 +46,7 @@
     <!-- These packages don't actually exist -->
     <ExcludedPackage Include="runtime.linux-musl-x64.runtime.native.System.IO.Ports" />
     <ExcludedPackage Include="runtime.linux-musl-arm64.runtime.native.System.IO.Ports" />
+    <ExcludedPackage Include="runtime.win-x64.runtime.native.System.IO.Ports" />
   </ItemGroup>
 
   <Target Name="GetPackagesToDownload"

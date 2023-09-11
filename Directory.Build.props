@@ -37,17 +37,17 @@
     <KeysDir>$(PrereqsDir)/keys/</KeysDir>
     <DotNetCliToolDir Condition="'$(DotNetCliToolDir)' == '' and '$(CustomDotNetSdkDir)' != ''">$([MSBuild]::EnsureTrailingSlash('$(CustomDotNetSdkDir)'))</DotNetCliToolDir>
     <DotNetCliToolDir Condition="'$(DotNetCliToolDir)' == '' and '$(DOTNET_INSTALL_DIR)' != ''">$([MSBuild]::NormalizeDirectory('$(DOTNET_INSTALL_DIR)'))</DotNetCliToolDir>
-    <DotNetCliToolDir Condition="'$(DotNetCliToolDir)' == ''">$(ProjectDir).dotnet/</DotNetCliToolDir>
+    <DotNetCliToolDir Condition="'$(DotNetCliToolDir)' == ''">$([MSBuild]::NormalizeDirectory('$(ProjectDir).dotnet/'))</DotNetCliToolDir>
     <DotnetToolCommand>$(DotNetCliToolDir)dotnet</DotnetToolCommand>
-    <PrereqsPackagesDir>$(ProjectDir)prereqs/packages/</PrereqsPackagesDir>
+    <PrereqsPackagesDir>$([MSBuild]::NormalizeDirectory('$(ProjectDir)prereqs/packages/'))</PrereqsPackagesDir>
     <PackagesDir Condition="'$(NuGetPackageRoot)' != ''">$(NuGetPackageRoot)</PackagesDir>
-    <PackagesDir Condition="'$(PackagesDir)' == ''">$(PrereqsPackagesDir)restored/</PackagesDir>
-    <ArcadeBootstrapPackageDir>$(PackagesDir)ArcadeBootstrapPackage/</ArcadeBootstrapPackageDir>
+    <PackagesDir Condition="'$(PackagesDir)' == ''">$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)restored/'))</PackagesDir>
+    <ArcadeBootstrapPackageDir>$([MSBuild]::NormalizeDirectory('$(PackagesDir)ArcadeBootstrapPackage/'))</ArcadeBootstrapPackageDir>
     <!-- if we're not currently building,  Visual Studio will still set this -->
     <SDK_VERSION Condition="'$(SDK_VERSION)' == ''">$(NETCoreSdkVersion)</SDK_VERSION>
-    <DotNetSdkDir>$(DotNetCliToolDir)sdk/$(SDK_VERSION)/</DotNetSdkDir>
-    <DotNetSdkResolversDir>$(DotNetSdkDir)SdkResolvers/</DotNetSdkResolversDir>
-    <SdkReferenceDir>$(DotNetCliToolDir)sdk/$(SDK_VERSION)/</SdkReferenceDir>
+    <DotNetSdkDir>$([MSBuild]::NormalizeDirectory('$(DotNetCliToolDir)sdk/$(SDK_VERSION)/'))</DotNetSdkDir>
+    <DotNetSdkResolversDir>$([MSBuild]::NormalizeDirectory('$(DotNetSdkDir)SdkResolvers/'))</DotNetSdkResolversDir>
+    <SdkReferenceDir>$([MSBuild]::NormalizeDirectory('$(DotNetCliToolDir)sdk/$(SDK_VERSION)/'))</SdkReferenceDir>
   </PropertyGroup>
 
   <!--
@@ -80,8 +80,8 @@
 
   <PropertyGroup>
     <!-- Init basic Arcade props, if the project importing this file doesn't use Arcade. -->
-    <ArtifactsDir Condition="'$(ArtifactsDir)' == ''">$(ProjectDir)artifacts/</ArtifactsDir>
-    <RepositoryEngineeringDir Condition="'$(RepositoryEngineeringDir)' == ''">$(ProjectDir)eng/</RepositoryEngineeringDir>
+    <ArtifactsDir Condition="'$(ArtifactsDir)' == ''">$([MSBuild]::NormalizeDirectory('$(ProjectDir)artifacts/'))</ArtifactsDir>
+    <RepositoryEngineeringDir Condition="'$(RepositoryEngineeringDir)' == ''">$([MSBuild]::NormalizeDirectory('$(ProjectDir)eng/'))</RepositoryEngineeringDir>
   </PropertyGroup>
 
   <PropertyGroup>

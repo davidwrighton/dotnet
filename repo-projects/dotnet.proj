@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <!-- Toolsets -->
-    <RepositoryReference Include="source-build-reference-packages" />
+    <RepositoryReference Condition="'$(OS)' != 'Windows_NT'" Include="source-build-reference-packages" />
     <RepositoryReference Include="arcade" />
 
     <!-- Product Repos -->
@@ -29,7 +29,7 @@
     <RepositoryReference Include="xliff-tasks" />
     <RepositoryReference Include="cecil" />
     <RepositoryReference Include="symreader" />
-    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Condition="'$(OS)' != 'Windows_NT'" Include="source-build-externals" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="xdt" />
