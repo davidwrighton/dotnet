@@ -155,7 +155,8 @@
 
     <!-- Repack tarball with new bootstrap name -->
     <Message Text="  Repacking tarball to $(NewTarballName)" Importance="High" />
-    <Exec Command="tar --numeric-owner -czf $(NewTarballName) *.nupkg *.props SourceBuildReferencePackages/" WorkingDirectory="$(UnpackedTarPath)" />
+    <Exec Condition="'$(OS)' != 'Windows_NT'" Command="tar --numeric-owner -czf $(NewTarballName) *.nupkg *.props SourceBuildReferencePackages/" WorkingDirectory="$(UnpackedTarPath)" />
+    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="tar --numeric-owner -czf $(NewTarballName) *.nupkg *.props SourceBuildReferencePackages" WorkingDirectory="$(UnpackedTarPath)" />
 
   </Target>
 

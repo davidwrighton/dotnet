@@ -64,7 +64,7 @@ goto startParamLoop
 rem Attempting to bootstrap without an SDK will fail. So either the --no-sdk flag must be passed
 rem or a pre-existing .dotnet SDK directory must exist.
 if "!buildBootstrap!" EQU "true" (
-  if "$installDotnet" NEQ "true" (
+  if "!installDotnet!" NEQ "true" (
     if NOT EXIST "!SCRIPT_ROOT!.dotnet" (
       echo ERROR: --no-sdk requires --no-bootstrap or a pre-existing .dotnet SDK directory.  Exiting...
       exit /b 1
@@ -94,8 +94,10 @@ if "!downloadPrebuilts!" EQU "true" (
 rem Check if dotnet is installed
 if "!installDotnet!" == "true" (
   if EXIST "!SCRIPT_ROOT!.dotnet" (
-    echo   ./.dotnet SDK directory exists...it will not be installed
-    set installDotnet=false
+    if EXIST "!SCRIPT_ROOT!artifacts\toolset\sdk.txt" (
+      echo   ./.dotnet SDK directory exists...it will not be installed
+      set installDotnet=false
+    )
   )
 )
 
@@ -149,10 +151,11 @@ FOR /F %%a IN ('dir /s /b !packagesArchiveDir!\Private.SourceBuilt.Artifacts*.ta
 tar -xzf "!sourceBuiltArchive!" -C !workingDir! PackageVersions.props
 
 rem Run restore on project to initiate download of bootstrap packages
-"!DOTNET_SDK_PATH!\dotnet" restore !workingDir!/buildBootstrapPreviouslySB.csproj /bl:artifacts/prep/bootstrap.binlog /fileLoggerParameters:LogFile=artifacts/prep/bootstrap.log "/p:ArchiveDir=!packagesArchiveDir!" "/p:BootstrapOverrideVersionsProps=!SCRIPT_ROOT!eng\bootstrap\OverrideBootstrapVersions.props"
+echo packagesArchiveDir=!packagesArchiveDir!
+"!DOTNET_SDK_PATH!\dotnet" restore !workingDir!/buildBootstrapPreviouslySB.csproj /bl:artifacts/prep/bootstrap.binlog /fileLoggerParameters:LogFile=artifacts/prep/bootstrap.log /p:ArchiveDir=!packagesArchiveDir! /p:BootstrapOverrideVersionsProps=!SCRIPT_ROOT!eng\bootstrap\OverrideBootstrapVersions.props
 
 rem Remove working directory
-rd /s /q !workingDir!
+REM rd /s /q !workingDir!
 
 rem End function
 goto :EOF

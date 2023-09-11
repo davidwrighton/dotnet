@@ -36,6 +36,9 @@ set packagesDir=%SCRIPT_ROOT%prereqs\packages\
 set packagesArchiveDir=%packagesDir%archive\
 set packagesRestoredDir=%packagesDir%restored\
 set packagesPreviouslySourceBuiltDir=%packagesDir%previously-source-built\
+
+rem The packagesDir variable must not override an msbuild variable, so unset it here
+set packagesDir=
 set CUSTOM_SDK_DIR=
 
 
