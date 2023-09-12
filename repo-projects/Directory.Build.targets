@@ -81,6 +81,29 @@
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)UpdateBuildToolFramework.complete" Overwrite="true" />
   </Target>
 
+  <Target Name="UpdateBuildToolPowershellFramework"
+          BeforeTargets="Build"
+          Condition="'$(EngCommonToolsPs1File)' != ''"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)UpdateBuildToolPowershellFramework.complete" >
+
+    <!-- Update the BuildToolFramework for repos that have not adopted the current version of Arcade-->
+    <ReplaceTextInFile InputFile="$(EngCommonToolsPs1File)"
+                       OldText="; Framework = 'net7.0'"
+                       NewText="; Framework = 'net8.0'" />
+
+    <ReplaceTextInFile InputFile="$(EngCommonToolsPs1File)"
+                       OldText="; Framework = 'netcoreapp3.1'"
+                       NewText="; Framework = 'net8.0'" />
+
+    <!-- Change the powershell variant of tools to respect the _InitializeDotNetCli environment variable -->
+    <ReplaceTextInFile InputFile="$(EngCommonToolsPs1File)"
+                       OldText="function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {$([System.Environment]::NewLine)  if (Test-Path variable:global:_DotNetInstallDir) {"
+                       NewText="function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {$([System.Environment]::NewLine)  if (Test-Path $env:_InitializeDotNetCli) {$([System.Environment]::NewLine)    return $global:_DotNetInstallDir=$env:_InitializeDotNetCli$([System.Environment]::NewLine)  }$([System.Environment]::NewLine)  if (Test-Path variable:global:_DotNetInstallDir) {" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)UpdateBuildToolPowershellFramework.complete" Overwrite="true" />
+  </Target>
+
   <Target Name="UpdateNuGetConfig"
           BeforeTargets="Build"
           Condition="'$(NuGetConfigFile)' != '' OR '@(NuGetConfigFiles)' != ''"
@@ -103,6 +126,7 @@
     </ItemGroup>
 
     <RemoveInternetSourcesFromNuGetConfig
+      Condition="'$(OS)'!='Windows_NT'"
       NuGetConfigFile="%(NuGetConfigFiles.Identity)"
       BuildWithOnlineSources="$(BuildWithOnlineSources)"
       KeepFeedPrefixes="@(KeepFeedPrefixes)" />

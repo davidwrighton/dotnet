@@ -45,6 +45,7 @@ set CUSTOM_SDK_DIR=
 set sourceRepository=
 set sourceVersion=
 set releaseManifest=
+set args=
 
 
 :startParamLoop
@@ -92,8 +93,7 @@ if /I "%1" EQU "--clean-while-building" (
   shift
 ) else if /I "%1" EQU "--" (
   shift
-  echo "Detected '--': passing remaining parameters '%*' as build.sh arguments."
-  goto doneParams
+  goto passExtraParams
 ) else if /I "%1" EQU "--help" (
   goto print_help
 ) else if /I "%1" EQU "-h" (
@@ -106,6 +106,14 @@ if /I "%1" EQU "--clean-while-building" (
 )
 shift
 goto startParamLoop
+:passExtraParams
+:parseExtraArgs
+if "%~1" neq "" (
+  set args=%args% %1
+  shift
+  goto :parseExtraArgs
+)
+echo "Detected '--': passing remaining parameters '!args!' as msbuild arguments."
 :doneParams
 
 rem For build purposes, we need to make sure we have all the SourceLink information
@@ -291,11 +299,11 @@ md !LogDir!
 
 if "!alternateTarget!" EQU "true" (
   set NUGET_PACKAGES=!NUGET_PACKAGES!/smoke-tests
-  call "!CLI_ROOT!\dotnet" msbuild "!SCRIPT_ROOT!\build.proj" "-bl:!SCRIPT_ROOT!\artifacts\log\Debug\BuildTests_$LogDateStamp.binlog" "-flp:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildTests_!LogDateStamp!.log" -clp:v=m !MSBUILD_ARGUMENTS! %*
+  call "!CLI_ROOT!\dotnet" msbuild "!SCRIPT_ROOT!\build.proj" "-bl:!SCRIPT_ROOT!\artifacts\log\Debug\BuildTests_$LogDateStamp.binlog" "-flp:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildTests_!LogDateStamp!.log" -clp:v=m !MSBUILD_ARGUMENTS! !args!
 ) else (
-  call "!CLI_ROOT!\dotnet" msbuild "!SCRIPT_ROOT!\eng\tools\init-build.proj" -bl:"!SCRIPT_ROOT!\artifacts\log\Debug\BuildXPlatTasks_!LogDateStamp!.binlog" -flp:LogFile="!SCRIPT_ROOT!\artifacts\logs\BuildXPlatTasks_!LogDateStamp!.log" -t:PrepareOfflineLocalTools !MSBUILD_ARGUMENTS! %*
+  call "!CLI_ROOT!\dotnet" msbuild "!SCRIPT_ROOT!\eng\tools\init-build.proj" -bl:"!SCRIPT_ROOT!\artifacts\log\Debug\BuildXPlatTasks_!LogDateStamp!.binlog" -flp:LogFile="!SCRIPT_ROOT!\artifacts\logs\BuildXPlatTasks_!LogDateStamp!.log" -t:PrepareOfflineLocalTools !MSBUILD_ARGUMENTS! !args!
   echo kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
   call "!CLI_ROOT!\dotnet" build-server shutdown
 
-  call "!CLI_ROOT!\dotnet" msbuild "!SCRIPT_ROOT!\build.proj" "-bl:!SCRIPT_ROOT!\artifacts\log\Debug\Build_!LogDateStamp!.binlog" "-flp:LogFile=!SCRIPT_ROOT!\artifacts\logs\Build_!LogDateStamp!.log" !MSBUILD_ARGUMENTS! %*
+  call "!CLI_ROOT!\dotnet" msbuild "!SCRIPT_ROOT!\build.proj" "-bl:!SCRIPT_ROOT!\artifacts\log\Debug\Build_!LogDateStamp!.binlog" "-flp:LogFile=!SCRIPT_ROOT!\artifacts\logs\Build_!LogDateStamp!.log" !MSBUILD_ARGUMENTS! !args!
 )

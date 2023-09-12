@@ -4,6 +4,7 @@
   <PropertyGroup>
     <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
     <BuildCommand>$(ProjectDirectory)eng\common\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+    <BuildCommand Condition="'$(OS)'=='Windows_NT'">powershell -ExecutionPolicy ByPass -NoProfile -command &quot;$(ProjectDirectory)eng\common\build.ps1 $(BuildCommandArgs)&quot;</BuildCommand>
   </PropertyGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

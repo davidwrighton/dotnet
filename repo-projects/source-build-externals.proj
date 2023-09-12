@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs)</BuildCommand>
+    <BuildCommand Condition="'$(OS)' == 'Windows_NT'">echo source-build-externals not built for this OS</BuildCommand>
   </PropertyGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
