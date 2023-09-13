@@ -8,6 +8,7 @@ Param(
   [string][Alias('v')]$verbosity = "minimal",
   [ValidateSet("windows","linux","osx","android","browser","wasi")][string]$os,
   [switch]$allconfigurations,
+  [bool] $nodeReuse = $true,
   [switch]$coverage,
   [string]$testscope,
   [switch]$testnobuild,
@@ -274,6 +275,7 @@ foreach ($argument in $PSBoundParameters.Keys)
     "configuration"          {}
     "arch"                   {}
     "fsanitize"              { $arguments += " /p:EnableNativeSanitizers=$($PSBoundParameters[$argument])"}
+    "subset"                 { if ($subset -ne 'all') { $arguments += " /p:$argument=$($PSBoundParameters[$argument])" } }
     default                  { $arguments += " /p:$argument=$($PSBoundParameters[$argument])" }
   }
 }
@@ -312,6 +314,7 @@ foreach ($config in $configuration) {
   $argumentsWithConfig = $arguments + " -configuration $((Get-Culture).TextInfo.ToTitleCase($config))";
   foreach ($singleArch in $arch) {
     $argumentsWithArch =  "/p:TargetArchitecture=$singleArch " + $argumentsWithConfig
+    Write-Host "Invoking $PSScriptRoot/common/build.ps1 $argumentsWithArch"
     Invoke-Expression "& `"$PSScriptRoot/common/build.ps1`" $argumentsWithArch"
     if ($lastExitCode -ne 0) {
         $failedBuilds += "Configuration: $config, Architecture: $singleArch"

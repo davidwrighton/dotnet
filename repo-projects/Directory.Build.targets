@@ -97,9 +97,34 @@
                        NewText="; Framework = 'net8.0'" />
 
     <!-- Change the powershell variant of tools to respect the _InitializeDotNetCli environment variable -->
+    <PropertyGroup>
+      <NewCommand>
+function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
+  if (Test-Path $env:_InitializeDotNetCli) {
+    # Creates a temporary file under the toolset dir.
+    # The following code block is protecting against concurrent access so that this function can
+    # be called in parallel.
+    if ($createSdkLocationFile) {
+      do {
+        $sdkCacheFileTemp = Join-Path $ToolsetDir %24([System.IO.Path]::GetRandomFileName())
+      }
+      until (!(Test-Path $sdkCacheFileTemp))
+      Set-Content -Path $sdkCacheFileTemp -Value $env:_InitializeDotNetCli
+
+      try {
+        Move-Item -Force $sdkCacheFileTemp (Join-Path $ToolsetDir &apos;sdk.txt&apos;)
+      } catch {
+        # Somebody beat us
+        Remove-Item -Path $sdkCacheFileTemp
+      }
+    }
+    return $global:_DotNetInstallDir=$env:_InitializeDotNetCli
+  }
+  if (Test-Path variable:global:_DotNetInstallDir) {</NewCommand>
+    </PropertyGroup>
     <ReplaceTextInFile InputFile="$(EngCommonToolsPs1File)"
                        OldText="function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {$([System.Environment]::NewLine)  if (Test-Path variable:global:_DotNetInstallDir) {"
-                       NewText="function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {$([System.Environment]::NewLine)  if (Test-Path $env:_InitializeDotNetCli) {$([System.Environment]::NewLine)    return $global:_DotNetInstallDir=$env:_InitializeDotNetCli$([System.Environment]::NewLine)  }$([System.Environment]::NewLine)  if (Test-Path variable:global:_DotNetInstallDir) {" />
+                       NewText="$(NewCommand)" />
 
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)UpdateBuildToolPowershellFramework.complete" Overwrite="true" />
   </Target>
@@ -389,6 +414,7 @@
           AfterTargets="Package">
     <ItemGroup>
       <_InnerPackageCacheFiles Include="$(ProjectDirectory)artifacts/source-build/self/package-cache/**/*" />
+      <_InnerPackageCacheFiles Include="$(ProjectDirectory)artifacts/sb/self/package-cache/**/*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(_InnerPackageCacheFiles)"
